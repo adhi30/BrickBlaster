@@ -1,15 +1,21 @@
 export default class Paddle {
   constructor(gameWidth, gameHeight) {
     this.gameWidth = gameWidth;
+    this.gameHeight = gameHeight;
     this.height = gameHeight*0.02;
     this.bottomPadding = gameHeight*0.01;
     this.width = gameWidth * 0.2;
-    this.speed = 0;
     this.maxSpeed = 5;
-    this.position = {x: (gameWidth/2) - (this.width/2),
-                     y: gameHeight - this.height - this.bottomPadding}
-    console.log(gameWidth, gameHeight, this.width, this.height);
-    document.addEventListener("keydown", event => {
+    this.init();
+  }
+
+  init() {
+    this.speed = 0;
+    this.position = {x: (this.gameWidth/2) - (this.width/2),
+                     y: this.gameHeight - this.height - this.bottomPadding}
+  }
+
+  handleKeyDown(event) {
         switch(event.keyCode) {
             case 37:
                 this.speed = -this.maxSpeed;
@@ -18,11 +24,10 @@ export default class Paddle {
                 this.speed = this.maxSpeed;
                 break;
          }
-    });
+  }
 
-    document.addEventListener("keyup", event => {
-        this.speed = 0;
-    });
+  handleKeyUp(event) {
+    this.speed = 0;
   }
 
   draw(ctx) {

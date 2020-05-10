@@ -1,13 +1,20 @@
+import hasCollisionOccured from './collision.js';
 export default class Ball {
-  constructor(gameWidth, gameHeight) {
-    this.gameWidth = gameWidth;
-    this.gameHeight = gameHeight;
+  constructor(gameObj) {
+    this.gameObj = gameObj;
+    this.gameWidth = gameObj.gameWidth;
+    this.gameHeight = gameObj.gameHeight;
     this.radius = 2;
-    this.bottomPadding = gameHeight*0.01;
-    this.width = gameWidth * 0.2;
+    this.bottomPadding = this.gameHeight*0.01;
+    this.height = this.radius * 2;
+    this.width = this.radius * 2;
+    this.init();
+  }
+
+  init() {
     this.speed = {x: 1, y: 1};
-    this.position = {x: gameWidth/2,
-                     y: gameHeight/2};
+    this.position = {x: this.gameWidth/2,
+                     y: this.gameHeight/2};
   }
 
   draw(ctx) {
@@ -15,9 +22,11 @@ export default class Ball {
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, this.radius, 0, 2*Math.PI, false);
     ctx.fill();
+    //console.log(this.position.x, this.position.y);
   }
 
   update() {
+      // collision with walls
       let newX = this.position.x + this.speed.x;
       let newY = this.position.y + this.speed.y;
       if(newX <= 0 || (newX + (this.radius*2)) >= this.gameWidth)
@@ -34,5 +43,21 @@ export default class Ball {
 
       this.position.x = newX;
       this.position.y = newY;
+
+      // collision with paddle. Can happen only with top of paddle. So, just reverse y speed.
+      if(hasCollisionOccured(this, this.gameObj.paddle)) {
+          this.speed.y = this.speed.y * -1;
+          this.position.y = this.gameObj.paddle.position.y - this.height;
+      }
+
+      // collision with bricks
+      for (let brick of this.gameObj.brickObjects) {
+          if(brick.broken === false && hasCollisionOccured(this, brick)) {
+              this.speed.y = this.speed.y * -1;
+              brick.broken = true;
+          }
+      }
+      if(this.position.y > this.gameObj.paddle.position.y)
+          this.gameObj.gameOver = true;
   }
 }

@@ -1,27 +1,115 @@
 import Paddle from './paddle.js';
 import Ball from './ball.js';
-let canvas = document.getElementById('gameCanvas');
-let context = canvas.getContext('2d');
+import Brick from './brick.js';
 
-let gameWidth = canvas .width;
-let gameHeight = canvas.height;
-
-context.fillRect(10,10,100,100);
-
-let paddle = new Paddle(gameWidth, gameHeight);
-let ball = new Ball(gameWidth, gameHeight);
-paddle.draw(context);
-
-
+let gameObj = undefined;
 function gameLoop(timeStamp) {
-  context.clearRect(0,0,gameWidth,gameHeight);
-  paddle.update();
-  ball.update();
+    if(gameObj.gameOver) {
+        if(gameObj.gameWon)
+            gameObj.drawGameWon();
+        else
+            gameObj.drawGameOver();
+        return;
+    }
 
-  paddle.draw(context);
-  ball.draw(context);
+    gameObj.update();
+    gameObj.draw();
 
-  requestAnimationFrame(gameLoop);
+    requestAnimationFrame(gameLoop);
 }
 
-requestAnimationFrame(gameLoop);
+let levels = {1: [0,1,1,1,0,1,1,1,0,1]};
+class Game {
+    constructor() {
+        this.canvas = document.getElementById('gameCanvas');
+        this.context = this.canvas.getContext('2d');
+        this.gameWidth = this.canvas .width;
+        this.gameHeight = this.canvas.height;
+        this.paddle = new Paddle(this.gameWidth, this.gameHeight);
+        this.ball = new Ball(this);
+        this.gameOver = false;
+        this.gameLevel = 1;
+        this.brickObjects = [];
+        this.initializeLevel();
+        document.addEventListener("keydown", event => {
+            console.log(event.keyCode);
+            switch(event.keyCode) {
+                case 37:
+                case 39:
+                    this.paddle.handleKeyDown(event);
+                    break;
+                case 32:
+                    this.restartLevel();
+            }
+        });
+
+        document.addEventListener("keyup", event => {
+            this.paddle.handleKeyUp(event);
+        });
+    }
+
+    initializeLevel() {
+        let brickArr = levels[this.gameLevel];
+        for (let i=0; i<brickArr.length; i++) {
+            if(brickArr[i] === 1)
+                this.brickObjects.push(new Brick(i*this.gameWidth*0.1,15,this.gameWidth,this.gameHeight));
+        }
+    }
+
+    restartLevel() {
+        this.paddle.init();
+        this.ball.init();
+        this.gameOver = false;
+        this.gameWon = false;
+        this.brickObjects = [];
+        this.initializeLevel();
+        requestAnimationFrame(gameLoop);
+    }
+
+    draw() {
+
+        this.context.clearRect(0,0,this.gameWidth,this.gameHeight);
+        this.paddle.draw(this.context);
+        this.ball.draw(this.context);
+
+        let allBricksBroken = true;
+        for(let brick of this.brickObjects) {
+            brick.draw(this.context);
+            allBricksBroken = allBricksBroken && brick.broken;
+        }
+
+        if(allBricksBroken) {
+            this.gameOver = true;
+            this.gameWon = true;
+        }
+
+    }
+
+    update() {
+        this.paddle.update();
+        this.ball.update();
+        for(let brick of this.brickObjects)
+            brick.update();
+    }
+
+    drawGameOver() {
+        this.context.font = "30px Arial";
+        this.context.fillStyle = "red";
+        this.context.textAlign = "center";
+        this.context.fillText("Game Over", this.gameWidth/2, this.gameHeight/2);
+    }
+
+    drawGameWon() {
+        this.context.font = "30px Arial";
+        this.context.fillStyle = "red";
+        this.context.textAlign = "center";
+        this.context.fillText("You Won", this.gameWidth/2, this.gameHeight/2);
+    }
+
+}
+
+gameObj = new Game();
+gameObj.restartLevel();
+
+
+
