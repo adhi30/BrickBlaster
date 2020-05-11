@@ -5,7 +5,6 @@ export default class Ball {
     this.gameWidth = gameObj.gameWidth;
     this.gameHeight = gameObj.gameHeight;
     this.radius = 2;
-    this.bottomPadding = this.gameHeight*0.01;
     this.height = this.radius * 2;
     this.width = this.radius * 2;
     this.init();
@@ -13,19 +12,26 @@ export default class Ball {
 
   init() {
     this.speed = {x: 1, y: 1};
-    this.position = {x: this.gameWidth/2,
-                     y: this.gameHeight/2};
+    this.position = {x: Math.round(this.gameWidth/2),
+                     y: Math.round(this.gameHeight/2)};
+    this.positionBeforeLastUpdate = {x: this.position.x,
+                     y: this.position.y};
   }
 
   draw(ctx) {
+    ctx.clearRect(this.positionBeforeLastUpdate.x-this.radius,this.positionBeforeLastUpdate.y-this.radius,this.width,this.height);
     ctx.fillStyle = "red";
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, this.radius, 0, 2*Math.PI, false);
     ctx.fill();
     //console.log(this.position.x, this.position.y);
+
   }
 
   update() {
+
+      this.positionBeforeLastUpdate = {x: this.position.x,
+                     y: this.position.y};
       // collision with walls
       let newX = this.position.x + this.speed.x;
       let newY = this.position.y + this.speed.y;
@@ -52,9 +58,10 @@ export default class Ball {
 
       // collision with bricks
       for (let brick of this.gameObj.brickObjects) {
-          if(brick.broken === false && hasCollisionOccured(this, brick)) {
+          if(brick.isBroken === false && hasCollisionOccured(this, brick)) {
               this.speed.y = this.speed.y * -1;
-              brick.broken = true;
+              brick.isBroken = true;
+              brick.drawOnNextPass = true;
           }
       }
       if(this.position.y > this.gameObj.paddle.position.y)

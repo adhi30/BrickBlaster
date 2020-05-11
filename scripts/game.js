@@ -32,7 +32,7 @@ class Game {
         this.brickObjects = [];
         this.initializeLevel();
         document.addEventListener("keydown", event => {
-            console.log(event.keyCode);
+            //console.log(event.keyCode);
             switch(event.keyCode) {
                 case 37:
                 case 39:
@@ -52,7 +52,7 @@ class Game {
         let brickArr = levels[this.gameLevel];
         for (let i=0; i<brickArr.length; i++) {
             if(brickArr[i] === 1)
-                this.brickObjects.push(new Brick(i*this.gameWidth*0.1,15,this.gameWidth,this.gameHeight));
+                this.brickObjects.push(new Brick(Math.round(i*this.gameWidth*0.1),15,this.gameWidth,this.gameHeight));
         }
     }
 
@@ -63,19 +63,23 @@ class Game {
         this.gameWon = false;
         this.brickObjects = [];
         this.initializeLevel();
+        this.clearCanvas = true;
         requestAnimationFrame(gameLoop);
     }
 
     draw() {
-
-        this.context.clearRect(0,0,this.gameWidth,this.gameHeight);
+        if(this.clearCanvas === true) {
+            this.context.clearRect(0,0,this.gameWidth,this.gameHeight);
+            this.clearCanvas = false;
+        }
+        //this.context.clearRect(0,0,this.gameWidth,this.gameHeight);
         this.paddle.draw(this.context);
         this.ball.draw(this.context);
 
         let allBricksBroken = true;
         for(let brick of this.brickObjects) {
             brick.draw(this.context);
-            allBricksBroken = allBricksBroken && brick.broken;
+            allBricksBroken = allBricksBroken && brick.isBroken;
         }
 
         if(allBricksBroken) {
@@ -96,14 +100,14 @@ class Game {
         this.context.font = "30px Arial";
         this.context.fillStyle = "red";
         this.context.textAlign = "center";
-        this.context.fillText("Game Over", this.gameWidth/2, this.gameHeight/2);
+        this.context.fillText("Game Over", Math.round(this.gameWidth/2), Math.round(this.gameHeight/2));
     }
 
     drawGameWon() {
         this.context.font = "30px Arial";
         this.context.fillStyle = "red";
         this.context.textAlign = "center";
-        this.context.fillText("You Won", this.gameWidth/2, this.gameHeight/2);
+        this.context.fillText("You Won", Math.round(this.gameWidth/2), Math.round(this.gameHeight/2));
     }
 
 }
