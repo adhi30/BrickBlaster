@@ -18,7 +18,8 @@ function gameLoop(timeStamp) {
     requestAnimationFrame(gameLoop);
 }
 
-let levels = {1: [0,1,1,1,0,1,1,1,0,1]};
+let levels = {1: [[0,1,1,1,0,1,1,1,0,1],
+                  [0,1,1,1,0,1,1,1,0,1]]};
 class Game {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
@@ -50,9 +51,11 @@ class Game {
 
     initializeLevel() {
         let brickArr = levels[this.gameLevel];
-        for (let i=0; i<brickArr.length; i++) {
-            if(brickArr[i] === 1)
-                this.brickObjects.push(new Brick(Math.round(i*this.gameWidth*0.1),15,this.gameWidth,this.gameHeight));
+        for (let r=0; r<brickArr.length; r++) {
+            for (let c=0; c<brickArr[r].length; c++) {
+                if(brickArr[r][c] === 1)
+                    this.brickObjects.push(new Brick(Math.round(c*this.gameWidth*0.1),Math.round(15+(r*this.gameHeight*0.05)),this.gameWidth,this.gameHeight));
+            }
         }
     }
 
